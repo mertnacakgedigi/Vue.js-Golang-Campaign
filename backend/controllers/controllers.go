@@ -8,6 +8,8 @@ import (
     "log"
     "net/http" 
     "github.com/joho/godotenv" 
+    "strconv"  // package used to covert string into int type
+    "github.com/gorilla/mux" // used to get the params from the route
     _ "github.com/lib/pq"      
 )
 
@@ -161,4 +163,69 @@ func insertCampaign(campaign models.Campaign) int64 {
 
     // return the inserted id
     return id
+}
+
+
+func DeleteCampaign(w http.ResponseWriter, r *http.Request) {
+
+    w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+    // get the userid from the request params, key is "id"
+    params := mux.Vars(r)
+
+    // convert the id in string to int
+    id, err := strconv.Atoi(params["id"])
+
+    if err != nil {
+        log.Fatalf("Unable to convert the string into int.  %v", err)
+    }
+
+    // call the deleteUser, convert the int to int64
+    deletedRows := deleteCampaign(int64(id))
+
+    // format the message string
+    msg := fmt.Sprintf("Campaign deleted successfully. Total rows/record affected %v", deletedRows)
+
+    // format the reponse message
+    res := response{
+        ID:      int64(id),
+        Message: msg,
+    }
+
+    // send the response
+    json.NewEncoder(w).Encode(res)
+}
+
+
+func deleteCampaign(id int64) int64 {
+
+    // create the postgres db connection
+    db := createConnection()
+
+    // close the db connection
+    defer db.Close()
+
+    // create the delete sql query
+    sqlStatement := `DELETE FROM campaigns WHERE id=$1`
+
+    // execute the sql statement
+    res, err := db.Exec(sqlStatement, id)
+
+    if err != nil {
+        log.Fatalf("Unable to execute the query. %v", err)
+    }
+
+    // check how many rows affected
+    rowsAffected, err := res.RowsAffected()
+
+    if err != nil {
+        log.Fatalf("Error while checking the affected rows. %v", err)
+    }
+
+    fmt.Printf("Total rows/record affected %v", rowsAffected)
+
+    return rowsAffected
 }
