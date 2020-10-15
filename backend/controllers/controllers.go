@@ -87,7 +87,7 @@ func getAllCampaigns() ([]models.Campaign, error) {
         var campaign models.Campaign
 
         // unmarshal the row object to campaign
-        err = rows.Scan(&campaign.Id, &campaign.Name, &campaign.Status)
+        err = rows.Scan(&campaign.Id, &campaign.Name, &campaign.Status,&campaign.Type, &campaign.Budget, &campaign.Created_on)
 
         if err != nil {
             log.Fatalf("Unable to scan the row. %v", err)
@@ -100,4 +100,65 @@ func getAllCampaigns() ([]models.Campaign, error) {
 
     // return empty campaign on error
     return campaigns, err
+}
+
+
+func CreateCampaign(w http.ResponseWriter, r *http.Request) {
+    // set the header to content type x-www-form-urlencoded
+    // Allow all origin to handle cors issue
+    w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "POST")
+    w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+
+    // create an empty campaign of type models.User
+    var campaign models.Campaign
+
+    // decode the json request to campaign
+    err := json.NewDecoder(r.Body).Decode(&campaign)
+
+    if err != nil {
+        log.Fatalf("Unable to decode the request body.  %v", err)
+    }
+
+    // call insert campaign function and pass the campaign
+    insertID := insertCampaign(campaign)
+
+    // format a response object
+    res := response{
+        ID:      insertID,
+        Message: "Campaign created successfully",
+    }
+
+    // send the response
+    json.NewEncoder(w).Encode(res)
+}
+
+func insertCampaign(campaign models.Campaign) int64 {
+
+    // create the postgres db connection
+    db := createConnection()
+
+    // close the db connection
+    defer db.Close()
+
+    // create the insert sql query
+    // returning userid will return the id of the inserted campaign
+    sqlStatement := `INSERT INTO campaigns (name, status,type,budget) VALUES ($1, $2,$3,$4) RETURNING id`
+
+    // the inserted id will store in this id
+    var id int64
+
+    // execute the sql statement
+    // Scan function will save the insert id in the id
+    err := db.QueryRow(sqlStatement, campaign.Name, campaign.Status,campaign.Type, campaign.Budget).Scan(&id)
+
+    if err != nil {
+        log.Fatalf("Unable to execute the query. %v", err)
+    }
+
+    fmt.Printf("Inserted a single record %v", id)
+
+    // return the inserted id
+    return id
 }

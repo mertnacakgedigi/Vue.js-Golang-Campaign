@@ -3,7 +3,7 @@
     <v-app id="inspire">
       <v-data-table
         :headers="headers"
-        :items="desserts"
+        :items="campaigns"
         sort-by="calories"
         class="elevation-1"
       >
@@ -45,20 +45,14 @@
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
-                          v-model="editedItem.fat"
-                          label="Fat (g)"
+                          v-model="editedItem.type"
+                          label="Type"
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
-                          v-model="editedItem.carbs"
-                          label="Carbs (g)"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.protein"
-                          label="Protein (g)"
+                          v-model="editedItem.budget"
+                          label="Budget"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -101,26 +95,24 @@ export default {
         value: "name",
       },
       { text: "Status", value: "status" },
-      { text: "Fat (g)", value: "fat" },
-      { text: "Carbs (g)", value: "carbs" },
-      { text: "Protein (g)", value: "protein" },
+      { text: "Type", value: "type" },
+      { text: "Budget", value: "budget" },
+      { text: "Created", value: "created_on" },
       { text: "Actions", value: "action", sortable: false },
     ],
-    desserts: [],
+    campaigns: [],
     editedIndex: -1,
     editedItem: {
       name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
+      status: "",
+      type: "",
+      budget: 0,
     },
     defaultItem: {
       name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
+      status: "",
+      type: "",
+      budget: 0,
     },
   }),
 
@@ -143,19 +135,19 @@ export default {
   methods: {
     async initialize() {
       let { data } = await axios.get("http://localhost:8000/api/campaign");
-      this.desserts = data;
+      this.campaigns = data;
     },
 
     editItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
+      this.editedIndex = this.campaigns.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
 
     deleteItem(item) {
-      const index = this.desserts.indexOf(item);
+      const index = this.campaigns.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
-        this.desserts.splice(index, 1);
+        this.campaigns.splice(index, 1);
     },
 
     close() {
@@ -168,9 +160,15 @@ export default {
 
     save() {
       if (this.editedIndex > -1) {
-        Object.assign(this.desserts[this.editedIndex], this.editedItem);
+        Object.assign(this.campaigns[this.editedIndex], this.editedItem);
       } else {
-        this.desserts.push(this.editedItem);
+        this.editedItem.budget = parseInt(this.editedItem.budget);
+        this.campaigns.push(this.editedItem);
+
+        axios.post(
+          "http://localhost:8000/api/newcampaign",
+          JSON.stringify(this.editedItem)
+        );
       }
       this.close();
     },
