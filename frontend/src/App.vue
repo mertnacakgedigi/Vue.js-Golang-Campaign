@@ -180,7 +180,7 @@ export default {
         Object.assign(temp, this.editedItem);
         this.editedItem.budget = parseInt(this.editedItem.budget);
         axios.put(
-          `http://localhost:8000/api/updatecampaign/${this.editedIndex}`,
+          `http://localhost:8000/api/campaign/${this.editedIndex}`,
           JSON.stringify(this.editedItem)
         );
         this.close();

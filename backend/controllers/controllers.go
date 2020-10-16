@@ -49,7 +49,7 @@ func GetAllCampaigns(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
     w.Header().Set("Access-Control-Allow-Origin", "*")
  
-    campaigns, err := getAllCampaigns()
+    campaigns, err := fetchAllCampaigns()
 
     if err != nil {
         log.Fatalf("Unable to get all campaign. %v", err)
@@ -57,7 +57,7 @@ func GetAllCampaigns(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(campaigns)
 }
 
-func getAllCampaigns() ([]models.Campaign, error) {
+func fetchAllCampaigns() ([]models.Campaign, error) {
     
     db := createConnection()
 
@@ -236,7 +236,7 @@ func updateCampaign(id int64, campaign models.Campaign) int64 {
     if err != nil {
         log.Fatalf("Unable to execute the query. %v", err)
     }
-     
+
     rowsAffected, err := res.RowsAffected()
 
     if err != nil {
