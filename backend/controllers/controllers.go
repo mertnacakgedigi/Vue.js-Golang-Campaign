@@ -229,3 +229,80 @@ func deleteCampaign(id int64) int64 {
 
     return rowsAffected
 }
+
+func UpdateCampaign(w http.ResponseWriter, r *http.Request) {
+
+    w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "PUT")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+    // get the userid from the request params, key is "id"
+    params := mux.Vars(r)
+
+    // convert the id type from string to int
+    id, err := strconv.Atoi(params["id"])
+
+    if err != nil {
+        log.Fatalf("Unable to convert the string into int.  %v", err)
+    }
+
+    // create an empty campaign of type models.User
+    var campaign models.Campaign
+
+    // decode the json request to campaign
+    err = json.NewDecoder(r.Body).Decode(&campaign)
+
+    if err != nil {
+        log.Fatalf("Unable to decode the request body.  %v", err)
+    }
+    fmt.Println(campaign)
+
+    // call update campaign to update the campaign
+    updatedRows := updateCampaign(int64(id), campaign)
+
+    // format the message string
+    msg := fmt.Sprintf("Campaign updated successfully. Total rows/record affected %v", updatedRows)
+
+    // format the response message
+    res := response{
+        ID:      int64(id),
+        Message: msg,
+    }
+
+    // send the response
+    json.NewEncoder(w).Encode(res)
+}
+
+
+
+// update campaign in the DB
+func updateCampaign(id int64, campaign models.Campaign) int64 {
+
+    // create the postgres db connection
+    db := createConnection()
+
+    // close the db connection
+    defer db.Close()
+
+    // create the update sql query
+    sqlStatement := `UPDATE campaigns SET name=$2, status=$3, type=$4, budget=$5 WHERE id=$1`
+
+    // execute the sql statement
+    res, err := db.Exec(sqlStatement, id, campaign.Name, campaign.Status, campaign.Type, campaign.Budget)
+
+    if err != nil {
+        log.Fatalf("Unable to execute the query. %v", err)
+    }
+
+    // check how many rows affected
+    rowsAffected, err := res.RowsAffected()
+
+    if err != nil {
+        log.Fatalf("Error while checking the affected rows. %v", err)
+    }
+
+    fmt.Printf("Total rows/record affected %v", rowsAffected)
+
+    return rowsAffected
+}

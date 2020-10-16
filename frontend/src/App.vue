@@ -173,7 +173,7 @@ export default {
           "http://localhost:8000/api/newcampaign",
           JSON.stringify(temp)
         );
-        this.campaigns.push(temp);
+        this.campaigns = [...this.campaigns, temp];
       }
       this.close();
     },
