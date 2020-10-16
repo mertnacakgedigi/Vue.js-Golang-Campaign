@@ -115,7 +115,7 @@ func CreateCampaign(w http.ResponseWriter, r *http.Request) {
 
     // create an empty campaign of type models.User
     var campaign models.Campaign
-    fmt.Println(r.Body)
+    
 
     // decode the json request to campaign
     err := json.NewDecoder(r.Body).Decode(&campaign)
@@ -124,7 +124,7 @@ func CreateCampaign(w http.ResponseWriter, r *http.Request) {
         log.Fatalf("Unable to decode the request body.  %v", err)
     }
 
-    fmt.Println(campaign)
+  
 
     // call insert campaign function and pass the campaign
     insertID := insertCampaign(campaign)
@@ -249,16 +249,13 @@ func UpdateCampaign(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         log.Fatalf("Unable to convert the string into int.  %v", err)
     }
-    fmt.Println(err)
-    
-    fmt.Println(r.Body,"B")
+
     // create an empty campaign of type models.User
     var campaign models.Campaign
-    fmt.Println(campaign,"CAM")
+
     // decode the json request to campaign
     err = json.NewDecoder(r.Body).Decode(&campaign)
 
-    fmt.Println("HEY")
 
     if err != nil {
         log.Println(err)
@@ -294,7 +291,7 @@ func updateCampaign(id int64, campaign models.Campaign) int64 {
 
     // create the update sql query
     sqlStatement := `UPDATE campaigns SET name=$2, status=$3, type=$4, budget=$5 WHERE id=$1`
-    fmt.Println(campaign)
+ 
     // execute the sql statement
     res, err := db.Exec(sqlStatement, id, campaign.Name, campaign.Status, campaign.Type, campaign.Budget)
 

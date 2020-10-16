@@ -8,5 +8,3 @@ CREATE TABLE campaigns (
     created_at Text
 );
 
-INSERT INTO campaigns (name, type,budget)
-VALUES ('Generate Leads', 'Sponsored Ads',12000);
