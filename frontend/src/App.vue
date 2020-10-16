@@ -6,9 +6,11 @@
         :items="campaigns"
         sort-by="calories"
         class="elevation-1"
+        :loading="myloadingvariable"
+        loading-text="Loading your campaigns ..."
       >
-        <template v-slot:item.Status="{ item }">
-          <v-chip :color="getColor(item.Status)" dark>
+        <template v-slot:item.status="{ item }">
+          <v-chip :color="getColor(item.status)" dark>
             {{ item.status }}
           </v-chip>
         </template>
@@ -17,10 +19,10 @@
             <v-toolbar-title>My Campaigns </v-toolbar-title>
             <v-divider class="mx-4" inset vertical></v-divider>
             <v-spacer></v-spacer>
-            <v-dialog v-model="dialog" max-width="500px">
+            <v-dialog v-model="dialog" max-width="600px">
               <template v-slot:activator="{ on }">
                 <v-btn color="primary" dark class="mb-2" v-on="on"
-                  >New Item</v-btn
+                  >New Campaign</v-btn
                 >
               </template>
               <v-card>
@@ -38,21 +40,24 @@
                         ></v-text-field>
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
-                        <v-text-field
+                        <v-select
                           v-model="editedItem.status"
+                          :items="status"
                           label="Status"
-                        ></v-text-field>
+                        ></v-select>
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
-                        <v-text-field
+                        <v-select
                           v-model="editedItem.type"
+                          :items="type"
                           label="Type"
-                        ></v-text-field>
+                        ></v-select>
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
                           v-model="editedItem.budget"
                           label="Budget"
+                          prefix="$"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -114,11 +119,19 @@ export default {
       type: "",
       budget: 0,
     },
+    status: ["Active", "Paused"],
+    type: [
+      "Headline Search",
+      "Product Display",
+      "Sponsored Product",
+      "Sponsored Brands",
+    ],
+    myloadingvariable: true,
   }),
 
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? "New Item" : "Edit Item";
+      return this.editedIndex === -1 ? "New Campaign" : "Edit Campaign";
     },
   },
 
@@ -134,14 +147,20 @@ export default {
 
   methods: {
     async initialize() {
-      let { data } = await axios.get("http://localhost:8000/api/campaign");
-      this.campaigns = data;
+      try {
+        let { data } = await axios.get("http://localhost:8000/api/campaign");
+        this.campaigns = data;
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.myloadingvariable = false;
+      }
     },
 
     editItem(id) {
       this.editedIndex = id;
       let temp = this.campaigns.find((obj) => obj.id === id);
-      this.editedItem = temp;
+      this.editedItem = Object.assign({}, temp);
       this.dialog = true;
     },
 
@@ -163,26 +182,18 @@ export default {
     save() {
       if (this.editedIndex > -1) {
         let temp = this.campaigns.find((obj) => obj.id === this.editedIndex);
-        console.log(temp);
         Object.assign(temp, this.editedItem);
-        let payload = {
-          name: "Sell like crazy",
-          status: "bismillah",
-          type: "yeni",
-        };
-        console.log(payload, "pay");
-
+        this.editedItem.budget = parseInt(this.editedItem.budget);
         axios.put(
-          `http://localhost:8000/api/updatecampaign/201936632`,
-          JSON.stringify(payload)
+          `http://localhost:8000/api/updatecampaign/${this.editedIndex}`,
+          JSON.stringify(this.editedItem)
         );
         this.close();
       } else {
         let temp = this.editedItem;
         temp.budget = parseInt(temp.budget);
         let date = new Date();
-        temp.created_at = date.toString();
-
+        temp.created_at = date.toString().slice(0, 24);
         temp.id = Math.floor(Math.random() * 1000000000);
         axios.post(
           "http://localhost:8000/api/newcampaign",
@@ -193,9 +204,9 @@ export default {
       }
     },
 
-    getColor(calories) {
-      if (calories) return "red";
-      return "orange";
+    getColor(status) {
+      if (status === "Paused") return "red";
+      return "green";
     },
   },
 };
