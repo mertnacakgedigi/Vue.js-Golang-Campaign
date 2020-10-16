@@ -71,8 +71,8 @@
           </v-toolbar>
         </template>
         <template v-slot:item.action="{ item }">
-          <v-icon small class="mr-2" @click="editItem(item)"> edit </v-icon>
-          <v-icon small @click="deleteItem(item)"> delete </v-icon>
+          <v-icon small class="mr-2" @click="editItem(item.id)"> edit </v-icon>
+          <v-icon small @click="deleteItem(item.id)"> delete </v-icon>
         </template>
         <template v-slot:no-data>
           <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -97,7 +97,7 @@ export default {
       { text: "Status", value: "status" },
       { text: "Type", value: "type" },
       { text: "Budget", value: "budget" },
-      { text: "Created", value: "created_on" },
+      { text: "Created", value: "created_at" },
       { text: "Actions", value: "action", sortable: false },
     ],
     campaigns: [],
@@ -144,10 +144,11 @@ export default {
       this.dialog = true;
     },
 
-    deleteItem(item) {
-      const index = this.campaigns.indexOf(item);
-      confirm("Are you sure you want to delete this item?") &&
-        this.campaigns.splice(index, 1);
+    deleteItem(id) {
+      if (confirm("Are you sure you want to delete this item?")) {
+        this.campaigns = this.campaigns.filter((el) => el.id !== id);
+        axios.delete(`http://localhost:8000/api/campaign/${id}`);
+      }
     },
 
     close() {
@@ -162,13 +163,17 @@ export default {
       if (this.editedIndex > -1) {
         Object.assign(this.campaigns[this.editedIndex], this.editedItem);
       } else {
-        this.editedItem.budget = parseInt(this.editedItem.budget);
-        this.campaigns.push(this.editedItem);
+        let temp = this.editedItem;
+        temp.budget = parseInt(temp.budget);
+        let date = new Date();
+        temp.created_at = date.toString();
 
+        temp.id = Math.floor(Math.random() * 1000000000);
         axios.post(
           "http://localhost:8000/api/newcampaign",
-          JSON.stringify(this.editedItem)
+          JSON.stringify(temp)
         );
+        this.campaigns.push(temp);
       }
       this.close();
     },

@@ -1,10 +1,11 @@
+DROP TABLE IF EXISTS campaigns
 CREATE TABLE campaigns (
-    id SERIAL PRIMARY KEY,
+    id INT PRIMARY KEY,
     name TEXT,
     status TEXT DEFAULT  'Paused',
     type TEXT,
     budget INT,
-    created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at Text
 );
 
 INSERT INTO campaigns (name, type,budget)

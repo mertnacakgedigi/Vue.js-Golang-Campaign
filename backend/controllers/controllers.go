@@ -89,7 +89,7 @@ func getAllCampaigns() ([]models.Campaign, error) {
         var campaign models.Campaign
 
         // unmarshal the row object to campaign
-        err = rows.Scan(&campaign.Id, &campaign.Name, &campaign.Status,&campaign.Type, &campaign.Budget, &campaign.Created_on)
+        err = rows.Scan(&campaign.Id, &campaign.Name, &campaign.Status,&campaign.Type, &campaign.Budget, &campaign.Created_at)
 
         if err != nil {
             log.Fatalf("Unable to scan the row. %v", err)
@@ -146,14 +146,14 @@ func insertCampaign(campaign models.Campaign) int64 {
 
     // create the insert sql query
     // returning userid will return the id of the inserted campaign
-    sqlStatement := `INSERT INTO campaigns (name, status,type,budget) VALUES ($1, $2,$3,$4) RETURNING id`
+    sqlStatement := `INSERT INTO campaigns (id,name, status,type,budget,created_at) VALUES ($1, $2,$3,$4,$5,$6) RETURNING id`
 
     // the inserted id will store in this id
     var id int64
 
     // execute the sql statement
     // Scan function will save the insert id in the id
-    err := db.QueryRow(sqlStatement, campaign.Name, campaign.Status,campaign.Type, campaign.Budget).Scan(&id)
+    err := db.QueryRow(sqlStatement, campaign.Id,campaign.Name, campaign.Status,campaign.Type, campaign.Budget,campaign.Created_at).Scan(&id)
 
     if err != nil {
         log.Fatalf("Unable to execute the query. %v", err)
