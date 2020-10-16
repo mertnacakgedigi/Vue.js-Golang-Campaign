@@ -138,16 +138,17 @@ export default {
       this.campaigns = data;
     },
 
-    editItem(item) {
-      this.editedIndex = this.campaigns.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+    editItem(id) {
+      this.editedIndex = id;
+      let temp = this.campaigns.find((obj) => obj.id === id);
+      this.editedItem = temp;
       this.dialog = true;
     },
 
     deleteItem(id) {
       if (confirm("Are you sure you want to delete this item?")) {
         this.campaigns = this.campaigns.filter((el) => el.id !== id);
-        axios.delete(`http://localhost:8000/api/campaign/${id}`);
+        axios.delete(`http://localhost:8000/api/deletecampaign/${id}`);
       }
     },
 
@@ -161,7 +162,21 @@ export default {
 
     save() {
       if (this.editedIndex > -1) {
-        Object.assign(this.campaigns[this.editedIndex], this.editedItem);
+        let temp = this.campaigns.find((obj) => obj.id === this.editedIndex);
+        console.log(temp);
+        Object.assign(temp, this.editedItem);
+        let payload = {
+          name: "Sell like crazy",
+          status: "bismillah",
+          type: "yeni",
+        };
+        console.log(payload, "pay");
+
+        axios.put(
+          `http://localhost:8000/api/updatecampaign/201936632`,
+          JSON.stringify(payload)
+        );
+        this.close();
       } else {
         let temp = this.editedItem;
         temp.budget = parseInt(temp.budget);
@@ -174,8 +189,8 @@ export default {
           JSON.stringify(temp)
         );
         this.campaigns = [...this.campaigns, temp];
+        this.close();
       }
-      this.close();
     },
 
     getColor(calories) {

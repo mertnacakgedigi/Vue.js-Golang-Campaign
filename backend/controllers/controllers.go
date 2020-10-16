@@ -115,6 +115,7 @@ func CreateCampaign(w http.ResponseWriter, r *http.Request) {
 
     // create an empty campaign of type models.User
     var campaign models.Campaign
+    fmt.Println(r.Body)
 
     // decode the json request to campaign
     err := json.NewDecoder(r.Body).Decode(&campaign)
@@ -122,6 +123,8 @@ func CreateCampaign(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         log.Fatalf("Unable to decode the request body.  %v", err)
     }
+
+    fmt.Println(campaign)
 
     // call insert campaign function and pass the campaign
     insertID := insertCampaign(campaign)
@@ -232,10 +235,10 @@ func deleteCampaign(id int64) int64 {
 
 func UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 
-    w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+    w.Header().Set("Content-Type", " application/json")
     w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Methods", "PUT")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+    w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
 
     // get the userid from the request params, key is "id"
     params := mux.Vars(r)
@@ -246,17 +249,21 @@ func UpdateCampaign(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         log.Fatalf("Unable to convert the string into int.  %v", err)
     }
-
+    fmt.Println(err)
+    
+    fmt.Println(r.Body,"B")
     // create an empty campaign of type models.User
     var campaign models.Campaign
-
+    fmt.Println(campaign,"CAM")
     // decode the json request to campaign
     err = json.NewDecoder(r.Body).Decode(&campaign)
 
+    fmt.Println("HEY")
+
     if err != nil {
-        log.Fatalf("Unable to decode the request body.  %v", err)
+        log.Println(err)
     }
-    fmt.Println(campaign)
+    
 
     // call update campaign to update the campaign
     updatedRows := updateCampaign(int64(id), campaign)
@@ -287,7 +294,7 @@ func updateCampaign(id int64, campaign models.Campaign) int64 {
 
     // create the update sql query
     sqlStatement := `UPDATE campaigns SET name=$2, status=$3, type=$4, budget=$5 WHERE id=$1`
-
+    fmt.Println(campaign)
     // execute the sql statement
     res, err := db.Exec(sqlStatement, id, campaign.Name, campaign.Status, campaign.Type, campaign.Budget)
 
