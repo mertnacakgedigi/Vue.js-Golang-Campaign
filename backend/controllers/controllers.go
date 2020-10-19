@@ -21,7 +21,6 @@ type response struct {
 }
 
 func createConnection() *sql.DB {
-    
     err := godotenv.Load(".env")
 
     if err != nil {
@@ -46,13 +45,12 @@ func createConnection() *sql.DB {
 }
 
 func GetAllCampaigns(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
     w.Header().Set("Access-Control-Allow-Origin", "*")
  
     campaigns, err := fetchAllCampaigns()
 
     if err != nil {
-        log.Fatalf("Unable to get all campaign. %v", err)
+        log.Printf("Unable to get all campaign. %v", err)
     }
     json.NewEncoder(w).Encode(campaigns)
 }
@@ -70,7 +68,7 @@ func fetchAllCampaigns() ([]models.Campaign, error) {
     rows, err := db.Query(sqlStatement)
 
     if err != nil {
-        log.Fatalf("Unable to execute the query. %v", err)
+        log.Printf("Unable to execute the query. %v", err)
     }
       
     defer rows.Close()
@@ -81,7 +79,7 @@ func fetchAllCampaigns() ([]models.Campaign, error) {
         err = rows.Scan(&campaign.Id, &campaign.Name, &campaign.Status,&campaign.Type, &campaign.Budget, &campaign.Created_at)
 
         if err != nil {
-            log.Fatalf("Unable to scan the row. %v", err)
+            log.Printf("Unable to scan the row. %v", err)
         }
 
         campaigns = append(campaigns, campaign)
@@ -92,23 +90,20 @@ func fetchAllCampaigns() ([]models.Campaign, error) {
 
 
 func CreateCampaign(w http.ResponseWriter, r *http.Request) {
-  
-    w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
     w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Methods", "POST")
-    w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+    
 
     var campaign models.Campaign
     
     err := json.NewDecoder(r.Body).Decode(&campaign)
 
     if err != nil {
-        log.Fatalf("Unable to decode the request body.  %v", err)
+        log.Printf("Unable to decode the request body.  %v", err)
     }
     
     insertID := insertCampaign(campaign)
 
-    
     res := response{
         ID:      insertID,
         Message: "Campaign created successfully",
@@ -129,7 +124,7 @@ func insertCampaign(campaign models.Campaign) int64 {
     err := db.QueryRow(sqlStatement, campaign.Id,campaign.Name, campaign.Status,campaign.Type, campaign.Budget,campaign.Created_at).Scan(&id)
 
     if err != nil {
-        log.Fatalf("Unable to execute the query. %v", err)
+        log.Printf("Unable to execute the query. %v", err)
     }
 
     fmt.Printf("Inserted a single record %v", id)
@@ -139,16 +134,15 @@ func insertCampaign(campaign models.Campaign) int64 {
 
 
 func DeleteCampaign(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
     w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Methods", "DELETE")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
     params := mux.Vars(r)
 
     id, err := strconv.Atoi(params["id"])
 
     if err != nil {
-        log.Fatalf("Unable to convert the string into int.  %v", err)
+        log.Printf("Unable to convert the string into int.  %v", err)
     }
 
     deletedRows := deleteCampaign(int64(id))
@@ -174,12 +168,12 @@ func deleteCampaign(id int64) int64 {
     res, err := db.Exec(sqlStatement, id)
 
     if err != nil {
-        log.Fatalf("Unable to execute the query. %v", err)
+        log.Printf("Unable to execute the query. %v", err)
     }
     rowsAffected, err := res.RowsAffected()
 
     if err != nil {
-        log.Fatalf("Error while checking the affected rows. %v", err)
+        log.Printf("Error while checking the affected rows. %v", err)
     }
 
     fmt.Printf("Total rows/record affected %v", rowsAffected)
@@ -188,18 +182,15 @@ func deleteCampaign(id int64) int64 {
 }
 
 func UpdateCampaign(w http.ResponseWriter, r *http.Request) {
-
-    w.Header().Set("Content-Type", " application/json")
     w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Methods", "PUT")
-    w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
 
     params := mux.Vars(r)
 
     id, err := strconv.Atoi(params["id"])
 
     if err != nil {
-        log.Fatalf("Unable to convert the string into int.  %v", err)
+        log.Printf("Unable to convert the string into int.  %v", err)
     }
 
     var campaign models.Campaign
@@ -213,7 +204,6 @@ func UpdateCampaign(w http.ResponseWriter, r *http.Request) {
     updatedRows := updateCampaign(int64(id), campaign)
 
     msg := fmt.Sprintf("Campaign updated successfully. Total rows/record affected %v", updatedRows)
-
     
     res := response{
         ID:      int64(id),
@@ -234,13 +224,13 @@ func updateCampaign(id int64, campaign models.Campaign) int64 {
     res, err := db.Exec(sqlStatement, id, campaign.Name, campaign.Status, campaign.Type, campaign.Budget)
 
     if err != nil {
-        log.Fatalf("Unable to execute the query. %v", err)
+        log.Printf("Unable to execute the query. %v", err)
     }
 
     rowsAffected, err := res.RowsAffected()
 
     if err != nil {
-        log.Fatalf("Error while checking the affected rows. %v", err)
+        log.Printf("Error while checking the affected rows. %v", err)
     }
 
     fmt.Printf("Total rows/record affected %v", rowsAffected)
