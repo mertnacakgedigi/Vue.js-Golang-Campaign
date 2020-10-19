@@ -1,9 +1,8 @@
 <template>
   <v-app id="inspire">
     <v-data-table
-      :headers="headers"
+      v-bind:headers="headers"
       :items="campaigns"
-      sort-by="calories"
       class="elevation-1"
       :loading="isLoading"
       loading-text="Loading your campaigns ..."
@@ -155,7 +154,7 @@ export default {
     editItem(id) {
       this.editedIndex = id;
       let temp = this.campaigns.find((obj) => obj.id === id);
-      this.editedItem = Object.assign({}, temp);
+      this.editedItem = temp;
       this.dialog = true;
     },
 
@@ -168,10 +167,8 @@ export default {
 
     close() {
       this.dialog = false;
-      setTimeout(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      }, 300);
+      this.editedItem = this.defaultItem;
+      this.editedIndex = -1;
     },
 
     save() {
