@@ -122,23 +122,19 @@ export default {
     ],
     isLoading: true,
   }),
-
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Campaign" : "Edit Campaign";
     },
   },
-
   watch: {
     dialog(val) {
       val || this.close();
     },
   },
-
   created() {
     this.initialize();
   },
-
   methods: {
     async initialize() {
       try {
@@ -150,27 +146,23 @@ export default {
         this.isLoading = false;
       }
     },
-
     editItem(id) {
       this.editedIndex = id;
       let temp = this.campaigns.find((obj) => obj.id === id);
-      this.editedItem = temp;
+      this.editedItem = Object.assign({}, temp);
       this.dialog = true;
     },
-
     deleteItem(id) {
       if (confirm("Are you sure you want to delete this item?")) {
         this.campaigns = this.campaigns.filter((el) => el.id !== id);
         axios.delete(`http://localhost:8000/api/deletecampaign/${id}`);
       }
     },
-
     close() {
       this.dialog = false;
       this.editedItem = this.defaultItem;
       this.editedIndex = -1;
     },
-
     save() {
       if (this.editedIndex > -1) {
         let temp = this.campaigns.find((obj) => obj.id === this.editedIndex);
@@ -195,7 +187,6 @@ export default {
         this.close();
       }
     },
-
     getColor(status) {
       if (status === "Paused") return "red";
       return "green";
